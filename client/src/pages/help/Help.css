@@ -1,0 +1,121 @@
+/* Help Page Styles with Improved Responsiveness */
+
+/* Base font size adjustments */
+.help-container {
+  font-size: 0.875rem;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Header responsive typography */
+.h3 {
+  font-size: 1.5rem;
+  color: #212529;
+}
+
+.h2-md {
+  font-size: 1.75rem;
+  color: #212529;
+}
+
+.h1-lg {
+  font-size: 2rem;
+  color: #212529;
+}
+
+.lead-sm {
+  font-size: 0.9rem;
+  color: #343a40;
+}
+
+.lead-md {
+  font-size: 1rem;
+  color: #343a40;
+}
+
+/* Rest of the code remains the same, just updating background colors to light and text colors to dark */
+.accordion-button {
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+.accordion-body {
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.card {
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.form-label {
+  color: #495057;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Dark mode support removed since we want light background and dark text */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #212529;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #212529;
+  }
+  
+  .accordion-button {
+    background-color: #ffffff;
+    color: #212529;
+    border-color: #dee2e6;
+  }
+  
+  .accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+  }
+  
+  .accordion-body {
+    background-color: #ffffff;
+    color: #212529;
+  }
+  
+  .form-control {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #212529;
+  }
+  
+  .form-control:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #212529;
+  }
+  
+  .text-muted {
+    color: #6c757d !important;
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }
+}
+
+/* Rest of the original CSS remains unchanged */
