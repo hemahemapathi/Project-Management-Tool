@@ -12,7 +12,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://project-management-tool-jj3f.onrender.com',
+  origin: 'https://trek-project-management-tool.netlify.app',
   credentials: true
 }));
 
