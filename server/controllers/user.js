@@ -7,6 +7,13 @@ const managerDomains = ['manager.com', 'admin.com'];
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+
     const domain = email.split('@')[1];
     const isManagerDomain = managerDomains.includes(domain);
   
@@ -14,13 +21,14 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Email domain does not match the selected role' });
     }
 
+    // Hash password
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password: hashedPassword, // Fixed: was using undefined hashedPassword
       role,
       emailDomain: domain
     });
@@ -29,13 +37,21 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Registration Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 export const registerManager = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Manager already exists with this email' });
+    }
+
     const domain = email.split('@')[1];
     
     if (!managerDomains.includes(domain)) {
@@ -46,28 +62,37 @@ export const registerManager = async (req, res) => {
       return res.status(400).json({ message: 'Role must be manager for manager registration' });
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = new User({
       name,
       email,
-      password,
+      password: hashedPassword,
       role: 'manager',
       emailDomain: domain
     });
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
 
     await user.save();
 
     res.status(201).json({ message: 'Manager registered successfully' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Manager Registration Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 export const registerTeamMember = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Team member already exists with this email' });
+    }
+
     const domain = email.split('@')[1];
     
     if (managerDomains.includes(domain)) {
@@ -78,29 +103,38 @@ export const registerTeamMember = async (req, res) => {
       return res.status(400).json({ message: 'Role must be team_member for team member registration' });
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = new User({
       name,
       email,
-      password,
+      password: hashedPassword,
       role: 'team_member',
       emailDomain: domain
     });
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
 
     await user.save();
 
     res.status(201).json({ message: 'Team member registered successfully' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Team Member Registration Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
-};export const loginUser = async (req, res) => {
+};
+
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const user = await User.findOne({ email });
 
-    if (!user|| !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -112,8 +146,12 @@ export const registerTeamMember = async (req, res) => {
       }
     };
 
-    jwt.sign(payload, process.env.JWT, { expiresIn: '1d' }, (err, token) => {
-      if (err) throw err;
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
+      if (err) {
+        console.error('JWT Sign Error:', err);
+        return res.status(500).json({ message: 'Error generating token' });
+      }
+      
       const userDetails = {
         id: user.id,
         name: user.name,
@@ -123,6 +161,7 @@ export const registerTeamMember = async (req, res) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
+      
       res.json({ token, user: userDetails });
     });
   } catch (error) {
@@ -134,6 +173,11 @@ export const registerTeamMember = async (req, res) => {
 export const loginManager = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const user = await User.findOne({ email, role: 'manager' });
 
     if (!user) {
@@ -153,11 +197,12 @@ export const loginManager = async (req, res) => {
       }
     };
 
-    jwt.sign(payload, process.env.JWT, { expiresIn: '1d' }, (err, token) => {
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
       if (err) {
         console.error('JWT Sign Error:', err);
         return res.status(500).json({ message: 'Error generating token' });
       }
+      
       const userDetails = {
         id: user.id,
         name: user.name,
@@ -167,6 +212,7 @@ export const loginManager = async (req, res) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
+      
       res.json({ token, user: userDetails });
     });
   } catch (error) {
@@ -178,6 +224,11 @@ export const loginManager = async (req, res) => {
 export const loginTeamMember = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const user = await User.findOne({ email, role: 'team_member' });
 
     if (!user) {
@@ -197,11 +248,12 @@ export const loginTeamMember = async (req, res) => {
       }
     };
 
-    jwt.sign(payload, process.env.JWT, { expiresIn: '1d' }, (err, token) => {
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
       if (err) {
         console.error('JWT Sign Error:', err);
         return res.status(500).json({ message: 'Error generating token' });
       }
+      
       const userDetails = {
         id: user.id,
         name: user.name,
@@ -211,6 +263,7 @@ export const loginTeamMember = async (req, res) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
+      
       res.json({ token, user: userDetails });
     });
   } catch (error) {
@@ -230,8 +283,8 @@ export const getUserProfile = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Get Profile Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -249,8 +302,8 @@ export const getUsers = async (req, res) => {
 
     res.json(users);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Get Users Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -275,11 +328,10 @@ export const updateUserProfile = async (req, res) => {
       res.status(403).json({ message: 'Access denied' });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 
 export const deleteUser = async (req, res) => {
   try {
@@ -297,11 +349,11 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await userToDelete.remove();
+    await User.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Delete User Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
