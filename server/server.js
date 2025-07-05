@@ -11,7 +11,7 @@ connectDB();
 
 // CORS configuration for local development
 app.use(cors({
-  origin: ['https://project-management-tool-jj3f.onrender.com'],
+  origin: ['https://trek-project-management-tool.netlify.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
