@@ -11,7 +11,7 @@ connectDB();
 
 // CORS configuration for local development
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['https://project-management-tool-jj3f.onrender.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
