@@ -12,7 +12,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://project-management-tool-jj3f.onrender.com',
   credentials: true
 }));
 
